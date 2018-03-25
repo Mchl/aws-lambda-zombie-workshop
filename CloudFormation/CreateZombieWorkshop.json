@@ -9,10 +9,6 @@
       "MinValue": "0",
       "MaxValue": "10",
       "Default": "0"
-    }, "S3ContentsBucket": {
-      "Description": "The source bucket for this workshop.",
-      "Type": "String",
-      "Default": "cmr-aws-zombie-workshop"
     }
   },
 
@@ -20,38 +16,47 @@
     "AllowedRegions": {
       "us-west-2": {
         "S3Endpoint": "https://s3-us-west-2",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-west-2",
         "CognitoRegion": "us-west-2"
       },
       "us-east-1": {
         "S3Endpoint": "https://s3",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-east-1",
         "CognitoRegion": "us-east-1"
       },
       "us-east-2": {
         "S3Endpoint": "https://s3-us-east-2",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-east-2",
         "CognitoRegion": "us-east-2"
       },
       "eu-west-1": {
         "S3Endpoint": "https://s3-eu-west-1",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-eu-west-1",
         "CognitoRegion": "eu-west-1"
       },
       "eu-central-1": {
         "S3Endpoint": "https://s3-eu-central-1",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-eu-central-1",
         "CognitoRegion": "eu-central-1"
       },
       "ap-northeast-1": {
         "S3Endpoint": "https://s3-ap-northeast-1",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-northeast-1",
         "CognitoRegion": "ap-northeast-1"
       },
       "ap-northeast-2": {
         "S3Endpoint": "https://s3-ap-northeast-2",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-northeast-2",
         "CognitoRegion": "ap-northeast-2"
       },
       "ap-southeast-1": {
         "S3Endpoint": "https://s3-ap-southeast-1",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-1",
         "CognitoRegion": "us-east-1"
       },
       "ap-southeast-2": {
         "S3Endpoint": "https://s3-ap-southeast-2",
+        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-2",
         "CognitoRegion": "us-east-1"
       }
     }
@@ -353,7 +358,7 @@
       "Properties": {
         "ServiceToken": { "Fn::GetAtt" : ["S3GetFilesFunction", "Arn"] },
         "StackName": { "Ref": "AWS::StackName" },
-        "BucketName": { "Ref" : "S3ContentsBucket" },
+        "BucketName": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "S3ContentsBucket"]},
         "WebsiteBucketCreatedEarlier": { "Ref" : "S3BucketForWebsiteContent" },
         "S3Region": { "Ref" : "AWS::Region" }
       },
@@ -369,7 +374,7 @@
         "Handler": "S3GetFilesFunction.handler",
         "Role": { "Fn::GetAtt": ["ZombieLabLambdaRole", "Arn"] },
         "Code": {
-          "S3Bucket": { "Ref" : "S3ContentsBucket" },
+          "S3Bucket": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "S3ContentsBucket"]},
           "S3Key": "S3GetFilesFunction.zip"
         },
         "Runtime": "nodejs4.3",
@@ -406,7 +411,7 @@
         "ServiceToken": { "Fn::GetAtt": ["CognitoTriggerBuild", "Arn"] },
         "region": { "Ref": "AWS::Region" },
         "CognitoRegion": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "CognitoRegion"]},
-        "LambdaFunctionBucket": { "Ref" : "S3ContentsBucket" },
+        "LambdaFunctionBucket": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "S3ContentsBucket"]},
         "StackName": { "Ref": "AWS::StackName" },
         "IamRole": { "Fn::GetAtt": ["ZombieLabLambdaRole", "Arn"] }
       },
