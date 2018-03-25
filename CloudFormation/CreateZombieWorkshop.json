@@ -52,12 +52,12 @@
       "ap-southeast-1": {
         "S3Endpoint": "https://s3-ap-southeast-1",
         "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-1",
-        "CognitoRegion": "us-east-1"
+        "CognitoRegion": "ap-northeast-1"
       },
       "ap-southeast-2": {
         "S3Endpoint": "https://s3-ap-southeast-2",
         "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-2",
-        "CognitoRegion": "us-east-1"
+        "CognitoRegion": "ap-southeast-2"
       }
     }
   },
@@ -482,16 +482,13 @@
             ]
           ]
         },
-        "AliasAttributes": [
-          "email"
-        ],
         "AutoVerifiedAttributes": [
           "email"
         ],
         "EmailVerificationSubject": "Signal Corps Survivor Confirmation",
         "LambdaConfig": {
-          "PostConfirmation": { "Fn::GetAtt" : ["CognitoPoolsFunction", "Arn"] },
-          "PreAuthentication": { "Fn::GetAtt" : ["CognitoPoolsFunction", "Arn"] }
+          "PostConfirmation": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] },
+          "PreAuthentication": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] }
         },
         "Schema": [
           {
@@ -628,7 +625,15 @@
         "MessagesDynamoDBTable"
       ]
     },
-
+    "AllowCognitoToCallLambdaTrigger": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] },
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt" : ["CognitoUserPool", "Arn"] }
+      }
+    },
     "WriteMessagesToDynamoDB": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
