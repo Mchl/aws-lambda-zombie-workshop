@@ -909,7 +909,7 @@
       "Condition": "CreateIamResources"
     },
     "BucketCopiedContentsFrom": {
-      "Value": { "Ref" : "S3ContentsBucket" },
+      "Value": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "S3ContentsBucket"]},
       "Description": "This is the local region AWS bucket where your files were copied from."
     },
     "CognitoUserPoolId": {
