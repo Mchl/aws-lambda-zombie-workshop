@@ -17,19 +17,19 @@ Each of the labs in this workshop is an independent section and you may choose t
 
   This exercise already has the UI and backend implemented, and focuses on how to setup the API Gateway to provide a RESTful endpoint. You will configure the survivor chat application to display which survivors are currently typing in the chat room.
 
-* **Lab 2: SMS Integration with Twilio**  
+* **Lab 2a: SMS Integration with Twilio**  
 
     This exercise uses [Twilio](http://twilio.com) to integrate SMS text functionality with the survivor chat application. You will configure a free-trial Twilio phone number so that users can send text messages to the survivor chat application. You'll learn to leverage mapping templates in API Gateway to perform data transformations in an API.
+
+* **Lab 2b: Slack Integration**  
+
+    This exercise integrates the popular messaging app, [Slack](http://slack.com), into the chat application so that survivors can send messages to the survivor chat from within the Slack app.
 
 * **Lab 3: Search Integration with Elasticsearch**  
 
     This exercise adds an Elasticsearch cluster to the application which is used to index chat messages streamed from the DynamoDB table containing chat messages.
 
-* **Lab 4: Slack Integration**  
-
-    This exercise integrates the popular messaging app, [Slack](http://slack.com), into the chat application so that survivors can send messages to the survivor chat from within the Slack app.
-
-* **Lab 5: Intel Edison Zombie Motion Sensor** (IoT device required)
+* **Lab 4: Intel Edison Zombie Motion Sensor** (IoT device required)
 
     This exercise integrates motion sensor detection of zombies to the chat system using an Intel Edison board and a Grove PIR Motion Sensor. You will configure a Lambda function to consume motion detection events and push them into the survivor chat!
 
@@ -331,7 +331,7 @@ Head back to the survivor chat app and **Refresh the page** type messages. POST 
 
 * * *
 
-## Lab 2 - SMS Integration with Twilio
+## Lab 2a - SMS Integration with Twilio
 
 **What you'll do in this lab...**
 
@@ -439,7 +439,7 @@ The result should look like the screenshot below:
 
 27\. You are now ready to test out Twilio integration with your API. Send a text message to your Twilio phone number from your mobile device.
 
-**LAB 2 COMPLETE**
+**LAB 2a COMPLETE**
 
 If the integration was successful, you should receive a confirmation response text message and your text message you sent should display in the web app chat room as coming from your Twilio Phone Number. You have successfully integrated Twilio text message functionality with API Gateway.
 
@@ -450,64 +450,7 @@ If the integration was successful, you should receive a confirmation response te
 
 * * *
 
-## Lab 3 - Search over the chat messages with Elasticsearch Service
-
-**What you'll do in this lab...**
-
-In this lab you'll launch an Elasticsearch Service cluster and setup DynamoDB Streams to automatically index chat messages in Elasticsearch for future ad hoc analysis of messages.
-
-**Elasticsearch Service Architecture**
-![Overview of Elasticsearch Service Integration](/Images/ElasticsearchServiceOverview.png)
-
-1\. Select the Amazon Elasticsearch icon from the main console page.
-
-2\. Create a new Amazon Elasticsearch domain. Provide it a name such as "[Your CloudFormation stack name]-zombiemessages". Click **Next**.
-
-3\. On the **Configure Cluster** page, leave the default cluster settings and click **Next**.
-
-4\. For the access set up, select **Public access** in the network configuration section for easy cluster access from outside your VPC (not recommended in general). Select the **Allow or deny access to one or more AWS accounts or IAM users** option in the dropdown **Set the domain access policy to** and fill in your account ID. Your AWS Account ID is actually provided to you in the examples section so just copy and paste it into the text box. Make sure **Allow** is selected for the "Effect" dropdown option. Click **OK**.
-
-5\. Select **Next** to go to the domain review page.
-
-6\. On the Review page, select **Confirm and create** to create your Elasticsearch cluster.
-
-7\. The creation of the Elasticsearch cluster takes approximately 10 minutes.
-
-* Since it takes roughly 10 minutes to launch an Elasticsearch cluster, you can either wait for this launch before proceeding, or you can move on to Lab 4 and come back to finish this lab when the cluster is ready.
-
-8\. Take note of the Endpoint once the cluster starts, we'll need that for the Lambda function.
-![API Gateway Invoke URL](/Images/Search-Step8.png)
-
-9\. Go into the Lambda service page by clicking on Lambda in the Management Console.
-
-10\. Select **Create a Lambda Function**.
-
-11\. In the Create function screen select **Author from scratch** to create a Lambda function from scratch. Give your function a name, such as **"[Your CloudFormation stack name]-ESsearch"**. Set the "Runtime" as **Node.js 4.3**. As **Role**, **Choose an existing role** should be selected from the dropdown. Then for the **Existing role**, select the role that looks like **[Your stack name]-ZombieLabLambdaRole...**. Click **Create function**.
-
-12\. In Add Triggers section, select the DynamoDB event source type. Scroll a bit down to the Configure triggers section and then select the **[Your stack name]-messages** DynamoDB table. Then set the **Batch size** to **5**, the **Starting position** to **Latest** and select the checkbox **Enable trigger**. Then click the **Add** button..
-
-13\. Scroll a bit up and select the blue box in the middle of you page, representing you Lambda function. Scroll down again to the **Function code** section. Take the source code from our Github repository, by open the **ZombieWorkshopSearchIndexing.js** file found inside the **/ElasticsearchLambda** folder. Delete the sample code in the Lambda console editor and replace it with the entire contents from your TwilioProcessing.js file. .
-
-14\. Once you have copied the code into Lambda, scroll down to [line 6](/ElasticSearchLambda/ZombieWorkshopSearchIndexing.js#L6) in the code provided, replace the **region** variable with the code for the region you are working in (the region you launched your stack, created your Lambda function etc). If you're working in Oregon region, then leave the code us-west-2 as is..
-
-Then on line 7, replace the **endpoint** variable that has a value of **ENDPOINT_HERE** with the Elasticsearch endpoint created in step 8\. **Make sure the endpoint you paste starts with https://**.
-
-* This step requires that your cluster is finished creating and in "Active" state before you'll have access to see the endpoint of your cluster.
-15\. Under "Basic settings", set the **Timeout** field to **1** minute. This ensures Lambda can process the batch of messages before Lambda times out. Keep all the other defaults on the page set as is. Then click **Save** on the top right corner to save the changes.
-
-
-16\. In the above step, we configured [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) to capture incoming messages on the table and trigger a Lambda function to push them to our Elasticsearch cluster. Your messages posted in the chat from this point forward will be indexed to Elasticsearch. Post a few messages in the chat, at least 5 as configured in the DynamoDB Streams event source (batch size). You should be able to see that messages are being indexed in the "Indices" section for your cluster in the Elasticsearch Service console.
-![API Gateway Invoke URL](/Images/Search-Done.png)
-
-**LAB 3 COMPLETE**
-
-If you would like to explore and search over the messages in the Kibana web UI that is provided with your cluster, you will need to navigate to the Elasticsearch domain you created and change the permissions. Currently you've configured the permissions so that only your AWS account has access. This allows your Lambda function to index messages into the cluster.
-
-To use the web UI to build charts and search over the index, you will need to implement an IP based policy to whitelist your computer/laptop/network or for simplicity, choose to allow everyone access. For instructions on how to modify the access policy of an ES cluster, visit [this documentation](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-configure-access.html). If you choose to open access to anyone be aware that anyone can see your messages, so please be sure to restrict access back to your AWS account when you're done exploring Kibana, or simply delete your ES cluster.  
-
-* * *
-
-## Lab 4 - Slack Integration
+## Lab 2b - Slack Integration
 
 **What you'll do in this lab...**
 
@@ -586,7 +529,7 @@ Click the grey **Save** button to continue. The result should look like the scre
 20\. You're ready to test out the Slash Command integration. In the team chat channel for your Slack account, type the Slash Command "/survivors" followed by a message. For example, type "/survivors Please help me I am stuck and zombies are trying to get me!". After sending it, you should get a confirmation response message from Slack Bot like the one below:
 ![Slack Command Success](/Images/Slack-Step24.png)
 
-**LAB 4 COMPLETE**
+**LAB 2b COMPLETE**
 
 Navigate to your zombie survivor chat app and you should see the message from Slack appear. You have configured Slack to send messages to your chat app!
 ![Slack Command in Chat App](/Images/Slack-Step25.png)
@@ -595,9 +538,67 @@ Navigate to your zombie survivor chat app and you should see the message from Sl
 
 You've configured Slack to forward messages to your zombie survivor chat app. But can you get messages sent in the chat app to appear in your Slack chat (i.e.: the reverse)? Give it a try or come back and attempt it later when you've finished the rest of the labs! HINT: You'll want to configure Slack's "Incoming Webhooks" integration feature along with a Lambda code configuration change to make POST requests to the Slack Webhook whenever users send messages in the chat app!
 
+
 * * *
 
-## Lab 5 - Motion Sensor Integration with Intel Edison and Grove
+## Lab 3 - Search over the chat messages with Elasticsearch Service
+
+**What you'll do in this lab...**
+
+In this lab you'll launch an Elasticsearch Service cluster and setup DynamoDB Streams to automatically index chat messages in Elasticsearch for future ad hoc analysis of messages.
+
+**Elasticsearch Service Architecture**
+![Overview of Elasticsearch Service Integration](/Images/ElasticsearchServiceOverview.png)
+
+1\. Select the Amazon Elasticsearch icon from the main console page.
+
+2\. Create a new Amazon Elasticsearch domain. Provide it a name such as "[Your CloudFormation stack name]-zombiemessages". Click **Next**.
+
+3\. On the **Configure Cluster** page, leave the default cluster settings and click **Next**.
+
+4\. For the access set up, select **Public access** in the network configuration section for easy cluster access from outside your VPC (not recommended in general). Select the **Allow or deny access to one or more AWS accounts or IAM users** option in the dropdown **Set the domain access policy to** and fill in your account ID. Your AWS Account ID is actually provided to you in the examples section so just copy and paste it into the text box. Make sure **Allow** is selected for the "Effect" dropdown option. Click **OK**.
+
+5\. Select **Next** to go to the domain review page.
+
+6\. On the Review page, select **Confirm and create** to create your Elasticsearch cluster.
+
+7\. The creation of the Elasticsearch cluster takes approximately 10 minutes.
+
+* Since it takes roughly 10 minutes to launch an Elasticsearch cluster, you can take a short break now.
+
+8\. Take note of the Endpoint once the cluster starts, we'll need that for the Lambda function.
+![API Gateway Invoke URL](/Images/Search-Step8.png)
+
+9\. Go into the Lambda service page by clicking on Lambda in the Management Console.
+
+10\. Select **Create a Lambda Function**.
+
+11\. In the Create function screen select **Author from scratch** to create a Lambda function from scratch. Give your function a name, such as **"[Your CloudFormation stack name]-ESsearch"**. Set the "Runtime" as **Node.js 4.3**. As **Role**, **Choose an existing role** should be selected from the dropdown. Then for the **Existing role**, select the role that looks like **[Your stack name]-ZombieLabLambdaRole...**. Click **Create function**.
+
+12\. In Add Triggers section, select the DynamoDB event source type. Scroll a bit down to the Configure triggers section and then select the **[Your stack name]-messages** DynamoDB table. Then set the **Batch size** to **5**, the **Starting position** to **Latest** and select the checkbox **Enable trigger**. Then click the **Add** button..
+
+13\. Scroll a bit up and select the blue box in the middle of you page, representing you Lambda function. Scroll down again to the **Function code** section. Take the source code from our Github repository, by open the **ZombieWorkshopSearchIndexing.js** file found inside the **/ElasticsearchLambda** folder. Delete the sample code in the Lambda console editor and replace it with the entire contents from your TwilioProcessing.js file. .
+
+14\. Once you have copied the code into Lambda, scroll down to [line 6](/ElasticSearchLambda/ZombieWorkshopSearchIndexing.js#L6) in the code provided, replace the **region** variable with the code for the region you are working in (the region you launched your stack, created your Lambda function etc). If you're working in Oregon region, then leave the code us-west-2 as is..
+
+Then on line 7, replace the **endpoint** variable that has a value of **ENDPOINT_HERE** with the Elasticsearch endpoint created in step 8\. **Make sure the endpoint you paste starts with https://**.
+
+* This step requires that your cluster is finished creating and in "Active" state before you'll have access to see the endpoint of your cluster.
+15\. Under "Basic settings", set the **Timeout** field to **1** minute. This ensures Lambda can process the batch of messages before Lambda times out. Keep all the other defaults on the page set as is. Then click **Save** on the top right corner to save the changes.
+
+
+16\. In the above step, we configured [DynamoDB Streams](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html) to capture incoming messages on the table and trigger a Lambda function to push them to our Elasticsearch cluster. Your messages posted in the chat from this point forward will be indexed to Elasticsearch. Post a few messages in the chat, at least 5 as configured in the DynamoDB Streams event source (batch size). You should be able to see that messages are being indexed in the "Indices" section for your cluster in the Elasticsearch Service console.
+![API Gateway Invoke URL](/Images/Search-Done.png)
+
+**LAB 3 COMPLETE**
+
+If you would like to explore and search over the messages in the Kibana web UI that is provided with your cluster, you will need to navigate to the Elasticsearch domain you created and change the permissions. Currently you've configured the permissions so that only your AWS account has access. This allows your Lambda function to index messages into the cluster.
+
+To use the web UI to build charts and search over the index, you will need to implement an IP based policy to whitelist your computer/laptop/network or for simplicity, choose to allow everyone access. For instructions on how to modify the access policy of an ES cluster, visit [this documentation](http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-configure-access.html). If you choose to open access to anyone be aware that anyone can see your messages, so please be sure to restrict access back to your AWS account when you're done exploring Kibana, or simply delete your ES cluster.  
+
+* * *
+
+## Lab 4 - Motion Sensor Integration with Intel Edison and Grove
 
 In this section, you'll help protect suvivors from zombies. Zombie motion sensor devices allow communities to determine if zombies (or intruders) are nearby. You'll setup a Lambda function to consume motion sensor events from an IoT device and push the messages into your chat application.
 
