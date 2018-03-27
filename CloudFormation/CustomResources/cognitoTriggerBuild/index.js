@@ -24,6 +24,7 @@ exports.handler = function(event, context, callback) {
 
   // if request type is CREATE or UPDATE, create the resources
   else {
+
     var params = {
       Code: {
         S3Bucket: lambdaBucket,
@@ -44,14 +45,9 @@ exports.handler = function(event, context, callback) {
       }
       else {
         console.log('Created cognitoLambdaTrigger. Function ARN is: ' + data.FunctionArn);
-        responseData = {
-          functionARN: data.functionArn,
-          "a": "a",
-          b: 'b',
-          c: data.FunctionArn
-        };
+        responseData = {FunctionARN: data.functionArn};
         responseStatus = "SUCCESS";
-        console.log('responseStatus is: ' + responseStatus + ' and event is: ' + event + ' and context is: ' + context + ' and responseData is: ' + JSON.stringify(responseData));
+        console.log('responseStatus is: ' + responseStatus + ' and event is: ' + event + ' and context is: ' + context);
         sendResponse(event, context, responseStatus, responseData, callback);
       }
     });
@@ -59,6 +55,7 @@ exports.handler = function(event, context, callback) {
 }
 
 function sendResponse(event, context, responseStatus, responseData, callback) {
+
   var responseBody = JSON.stringify({
       Status: responseStatus,
       Reason: 'See the details in CloudWatch Log Stream: ' + context.logStreamName,

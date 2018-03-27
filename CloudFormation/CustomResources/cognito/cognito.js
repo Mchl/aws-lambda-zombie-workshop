@@ -14,9 +14,8 @@ exports.handler = function(event, context, callback) {
   var cognitoidentity = new AWS.CognitoIdentity({region: event.ResourceProperties.CognitoRegion});
   var s3bucket = new AWS.S3();
   var cognitoRoleARN = event.ResourceProperties.cognitoRoleARN;
-  var clientId = event.ResourceProperties.ClientAppId;
-  var userPoolId = event.ResourceProperties.CognitoUserPoolId;
-  var userPool = 'cognito-idp.' + cognitoRegion + '.amazonaws.com/' + event.ResourceProperties.CognitoUserPoolId;
+  var clientId = '';
+  var userPoolId = '';
   var identityPoolid = '';
 
   // If DELETE request type is sent, return success to cloudformation. User will manually tear down Cognito resources
@@ -54,13 +53,6 @@ exports.handler = function(event, context, callback) {
       var params = {
         AllowUnauthenticatedIdentities: true,
         IdentityPoolName: stackName + '_identitypool',
-        CognitoIdentityProviders: [
-          {
-            ClientId: clientId,
-            ProviderName: userPool,
-            ServerSideTokenCheck: false
-          }
-        ],
       };
       cognitoidentity.createIdentityPool(params, function(err, data) {
         if (err) {
@@ -96,6 +88,7 @@ exports.handler = function(event, context, callback) {
     }
 
     function getConstantsFile(callback) {
+
       var params = {
         Bucket: bucket,
         Key: constantsFileKey
@@ -115,6 +108,7 @@ exports.handler = function(event, context, callback) {
     }
 
     function replaceConstantsFile(url, callback) {
+
       var params = {
         Bucket: bucket,
         Key: constantsFileKey,

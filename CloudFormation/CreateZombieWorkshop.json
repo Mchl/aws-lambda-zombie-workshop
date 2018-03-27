@@ -16,48 +16,48 @@
     "AllowedRegions": {
       "us-west-2": {
         "S3Endpoint": "https://s3-us-west-2",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-west-2",
+        "S3ContentsBucket": "aws-zombie-workshop-us-west-2",
         "CognitoRegion": "us-west-2"
       },
       "us-east-1": {
         "S3Endpoint": "https://s3",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-east-1",
+        "S3ContentsBucket": "aws-zombie-workshop-us-east-1",
         "CognitoRegion": "us-east-1"
       },
       "us-east-2": {
         "S3Endpoint": "https://s3-us-east-2",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-us-east-2",
+        "S3ContentsBucket": "aws-zombie-workshop-us-east-2",
         "CognitoRegion": "us-east-2"
       },
       "eu-west-1": {
         "S3Endpoint": "https://s3-eu-west-1",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-eu-west-1",
+        "S3ContentsBucket": "aws-zombie-workshop-eu-west-1",
         "CognitoRegion": "eu-west-1"
       },
       "eu-central-1": {
         "S3Endpoint": "https://s3-eu-central-1",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-eu-central-1",
+        "S3ContentsBucket": "aws-zombie-workshop-eu-central-1",
         "CognitoRegion": "eu-central-1"
       },
       "ap-northeast-1": {
         "S3Endpoint": "https://s3-ap-northeast-1",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-northeast-1",
+        "S3ContentsBucket": "aws-zombie-workshop-ap-northeast-1",
         "CognitoRegion": "ap-northeast-1"
       },
       "ap-northeast-2": {
         "S3Endpoint": "https://s3-ap-northeast-2",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-northeast-2",
+        "S3ContentsBucket": "aws-zombie-workshop-ap-northeast-2",
         "CognitoRegion": "ap-northeast-2"
       },
       "ap-southeast-1": {
         "S3Endpoint": "https://s3-ap-southeast-1",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-1",
-        "CognitoRegion": "ap-northeast-1"
+        "S3ContentsBucket": "aws-zombie-workshop-ap-southeast-1",
+        "CognitoRegion": "us-east-1"
       },
       "ap-southeast-2": {
         "S3Endpoint": "https://s3-ap-southeast-2",
-        "S3ContentsBucket": "cmr-aws-zombie-workshop-ap-southeast-2",
-        "CognitoRegion": "ap-southeast-2"
+        "S3ContentsBucket": "aws-zombie-workshop-ap-southeast-2",
+        "CognitoRegion": "us-east-1"
       }
     }
   },
@@ -468,121 +468,6 @@
       ]
     },
 
-    "CognitoUserPool": {
-      "Type": "AWS::Cognito::UserPool",
-      "Properties": {
-        "UserPoolName": {
-          "Fn::Join": [
-            "-",
-            [
-              {
-                "Ref": "AWS::StackName"
-              },
-              "userpool"
-            ]
-          ]
-        },
-        "AutoVerifiedAttributes": [
-          "email"
-        ],
-        "EmailVerificationSubject": "Signal Corps Survivor Confirmation",
-        "LambdaConfig": {
-          "PostConfirmation": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] },
-          "PreAuthentication": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] }
-        },
-        "Schema": [
-          {
-            "Name": "name",
-            "AttributeDataType": "String",
-            "Mutable": true,
-            "Required": true
-          },
-          {
-            "Name": "email",
-            "AttributeDataType": "String",
-            "Mutable": true,
-            "Required": true
-          },
-          {
-            "Name": "phone_number",
-            "AttributeDataType": "String",
-            "Mutable": true,
-            "Required": true
-          },
-          {
-            "Name": "slackuser",
-            "AttributeDataType": "String",
-            "Mutable": true
-          },
-          {
-            "Name": "slackteamdomain",
-            "AttributeDataType": "String",
-            "Mutable": true
-          },
-          {
-            "Name": "camp",
-            "AttributeDataType": "String",
-            "Mutable": true
-          }
-        ]
-      }
-    },
-    "AppClient": {
-      "Type": "AWS::Cognito::UserPoolClient",
-      "Properties": {
-        "ClientName": "Zombie Survivor Chat App",
-        "GenerateSecret": false,
-        "ReadAttributes": [
-          "address",
-          "birthdate",
-          "custom:camp",
-          "custom:slackteamdomain",
-          "custom:slackuser",
-          "email",
-          "email_verified",
-          "family_name",
-          "gender",
-          "given_name",
-          "locale",
-          "middle_name",
-          "name",
-          "nickname",
-          "phone_number",
-          "phone_number_verified",
-          "picture",
-          "preferred_username",
-          "profile",
-          "updated_at",
-          "website",
-          "zoneinfo"
-        ],
-        "WriteAttributes": [
-          "address",
-          "birthdate",
-          "custom:camp",
-          "custom:slackteamdomain",
-          "custom:slackuser",
-          "email",
-          "family_name",
-          "gender",
-          "given_name",
-          "locale",
-          "middle_name",
-          "name",
-          "nickname",
-          "phone_number",
-          "picture",
-          "preferred_username",
-          "profile",
-          "updated_at",
-          "website",
-          "zoneinfo"
-        ],
-        "UserPoolId": {
-          "Ref": "CognitoUserPool"
-        }
-      }
-    },
     "CognitoPoolsFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -603,6 +488,7 @@
         "CreateAPIGateway"
       ]
     },
+
     "CreateCognitoPools": {
       "Type": "Custom::CognitoPoolsFunction",
       "Properties": {
@@ -612,9 +498,7 @@
         "cognitoRoleARN": { "Fn::GetAtt": ["ZombieLabLambdaRole", "Arn"] },
         "bucket": { "Ref": "S3BucketForWebsiteContent" },
         "constantsFile": "S3/assets/js/constants.js",
-        "StackName": { "Ref": "AWS::StackName" },
-        "CognitoUserPoolId": { "Ref": "CognitoUserPool" },
-        "ClientAppId": { "Ref": "AppClient" }
+        "StackName": { "Ref": "AWS::StackName" }
       },
       "DependsOn": [
         "S3BucketForWebsiteContent",
@@ -625,15 +509,7 @@
         "MessagesDynamoDBTable"
       ]
     },
-    "AllowCognitoToCallLambdaTrigger": {
-      "Type": "AWS::Lambda::Permission",
-      "Properties": {
-        "Action": "lambda:InvokeFunction",
-        "FunctionName": { "Fn::GetAtt" : ["CreateCognitoTrigger", "c"] },
-        "Principal": "cognito-idp.amazonaws.com",
-        "SourceArn": { "Fn::GetAtt" : ["CognitoUserPool", "Arn"] }
-      }
-    },
+
     "WriteMessagesToDynamoDB": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -916,14 +792,6 @@
     "BucketCopiedContentsFrom": {
       "Value": { "Fn::FindInMap" : [ "AllowedRegions", { "Ref" : "AWS::Region" }, "S3ContentsBucket"]},
       "Description": "This is the local region AWS bucket where your files were copied from."
-    },
-    "CognitoUserPoolId": {
-      "Value": { "Ref": "CognitoUserPool" },
-      "Description": "The Cognito user pool Id."
-    },
-    "AppClientId": {
-      "Value": { "Ref": "AppClient" },
-      "Description": "The App Client Id."
     }
   }
 }
